@@ -2,6 +2,7 @@ import type { ReadAloudDeliveryPreference, ReadAloudDeliveryVariant, DeliveryArt
 import type { HighlightOfTheDayWidgetData, ReadingGoalWidgetData, ReadingStreakWidgetData } from "./dashboard";
 import type { SeriesIndex } from "./series-index";
 import type { AchievementRarity } from "./achievement";
+import type { FontFormat } from "./font";
 
 export interface KoreaderCredentials {
   readAloudDelivery?: ReadAloudDeliveryPreference;
@@ -593,7 +594,22 @@ export type KoreaderPluginCapability =
   | "catalogListsV2"
   | "catalogPublishedSort"
   | "sidecarState"
-  | "annotationPendingBooks";
+  | "annotationPendingBooks"
+  | "serverFonts";
+
+/**
+ * One file of the administrator's font collection, as a device needs it to keep a copy. A
+ * server font file never changes under its id, so the id and format name the file for good.
+ */
+export interface KoreaderServerFont {
+  id: number;
+  format: FontFormat;
+  fileSize: number;
+}
+
+export interface KoreaderServerFontList {
+  fonts: KoreaderServerFont[];
+}
 
 export interface KoreaderPluginVersionInfo {
   pluginVersion: string;

@@ -524,6 +524,69 @@ function MainMenu:startPageSync(page, refresh, opts)
     })
 end
 
+local function fontProgressText(index, count, received, size)
+    if size and size >= 1024 * 1024 and received and received > 0 then
+        return T(_("Font %1 of %2 · %3%"), index, count, math.floor(math.min(1, received / size) * 10) * 10)
+    end
+    return T(_("Font %1 of %2"), index, count)
+end
+
+local function fontOutcomeText(summary)
+    if summary.added > 0 or summary.removed > 0 then
+        return T(_("%1 added, %2 removed. Restart KOReader to use them."), summary.added, summary.removed)
+    end
+    if summary.total == 0 then return _("Your server has no fonts to share") end
+    return T(_.ngettext("Up to date: %1 font on this device", "Up to date: %1 fonts on this device", summary.total), summary.total)
+end
+
+-- Get server fonts, reporting to the page that started it on page.fonts:
+-- progress while it runs, then the outcome. KOReader registers fonts when it
+-- starts, so a run that changed the folder offers a restart.
+function MainMenu:startPageFontSync(page, refresh)
+    if not self:isLoggedIn() then
+        self:promptLogin()
+        return
+    end
+    NetworkMgr:runWhenConnected(function()
+        if self._syncing_fonts then return end
+        self._syncing_fonts = true
+        page.fonts = { running = true, text = _("Looking for fonts…") }
+        refresh()
+        self:runInSyncCoroutine(function()
+            local shown = page.fonts.text
+            local ok, summary, err = pcall(require("bookorbit_server_fonts").sync, self:newClient(), {
+                on_progress = function(index, count, received, size)
+                    local progress = fontProgressText(index, count, received, size)
+                    if page.closed or progress == shown then return end
+                    shown = progress
+                    page.fonts = { running = true, text = progress }
+                    refresh()
+                end,
+            })
+            self._syncing_fonts = false
+            if not ok then summary, err = nil, summary end
+            if summary and summary.err then err = summary.err end
+            local reason = err and (err == "folder_failed" and _("could not create the fonts folder") or self:errorLabel(err))
+            local outcome
+            if reason then
+                outcome = { err = reason }
+            else
+                outcome = { done = true, text = fontOutcomeText(summary) }
+            end
+            if page.closed then
+                local Toast = require("bookorbit_toast")
+                if outcome.err then Toast.error(T(_("Could not get fonts: %1"), outcome.err)) else Toast.show(outcome.text) end
+            else
+                page.fonts = outcome
+                refresh()
+            end
+            if summary and (summary.added > 0 or summary.removed > 0) then
+                UIManager:askForRestart(_("KOReader needs to restart to use the new fonts."))
+            end
+        end)
+    end)
+end
+
 function MainMenu:startSheetSync(page, catalog)
     local MenuSheet = require("bookorbit_menu_sheet")
     self:startPageSync(page, function(reload)

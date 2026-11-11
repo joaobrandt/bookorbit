@@ -8,6 +8,8 @@ import { KoreaderCatalogController } from './koreader-catalog.controller';
 import { KoreaderCatalogService } from './koreader-catalog.service';
 import { KoreaderChapterExtractorService } from './koreader-chapter-extractor.service';
 import { KoreaderChapterService } from './koreader-chapter.service';
+import { KoreaderFontController } from './koreader-font.controller';
+import { KoreaderFontService } from './koreader-font.service';
 import { KoreaderController } from './koreader.controller';
 import { KoreaderHashLinkService } from './koreader-hash-link.service';
 import { KoreaderDeliveryController } from './koreader-delivery.controller';
@@ -30,6 +32,7 @@ describe('KoreaderModule', () => {
       KoreaderController,
       KoreaderPluginController,
       KoreaderCatalogController,
+      KoreaderFontController,
     ]);
     expect(Reflect.getMetadata('providers', KoreaderModule)).toEqual([
       KoreaderDeliveryService,
@@ -38,6 +41,7 @@ describe('KoreaderModule', () => {
       KoreaderRepository,
       KoreaderAuthGuard,
       KoreaderCatalogService,
+      KoreaderFontService,
       KoreaderPackageService,
       KoreaderChapterService,
       KoreaderChapterExtractorService,

@@ -13,6 +13,7 @@ import { OpdsModule } from '../opds/opds.module';
 import { PositionConverterModule } from '../position-converter/position-converter.module';
 import { ReadingSessionModule } from '../reading-session/reading-session.module';
 import { RecommendationModule } from '../recommendation/recommendation.module';
+import { ServerFontModule } from '../server-font/server-font.module';
 import { UserModule } from '../user/user.module';
 import { UserBookNoteModule } from '../user-book-note/user-book-note.module';
 import { UserBookStatusModule } from '../user-book-status/user-book-status.module';
@@ -22,6 +23,8 @@ import { KoreaderBookmarkExchangeService } from './koreader-bookmark-exchange.se
 import { KoreaderBookmarkRepository } from './koreader-bookmark.repository';
 import { KoreaderCatalogController } from './koreader-catalog.controller';
 import { KoreaderCatalogService } from './koreader-catalog.service';
+import { KoreaderFontController } from './koreader-font.controller';
+import { KoreaderFontService } from './koreader-font.service';
 import { KoreaderPackageService } from './koreader-package.service';
 import { KoreaderChapterExtractorService } from './koreader-chapter-extractor.service';
 import { KoreaderChapterService } from './koreader-chapter.service';
@@ -56,8 +59,9 @@ import { KoreaderSyncEstimateCleanupService } from './koreader-sync-estimate-cle
     PositionConverterModule,
     ReadingSessionModule,
     RecommendationModule,
+    ServerFontModule,
   ],
-  controllers: [KoreaderDeliveryController, KoreaderController, KoreaderPluginController, KoreaderCatalogController],
+  controllers: [KoreaderDeliveryController, KoreaderController, KoreaderPluginController, KoreaderCatalogController, KoreaderFontController],
   providers: [
     KoreaderDeliveryService,
     KoreaderService,
@@ -65,6 +69,7 @@ import { KoreaderSyncEstimateCleanupService } from './koreader-sync-estimate-cle
     KoreaderRepository,
     KoreaderAuthGuard,
     KoreaderCatalogService,
+    KoreaderFontService,
     KoreaderPackageService,
     KoreaderChapterService,
     KoreaderChapterExtractorService,

@@ -7,6 +7,7 @@ Syncs your KOReader reading life into BookOrbit:
 - **Reading statistics**: uploads KOReader's per-page time events; BookOrbit turns them into reading sessions and daily stats.
 - **Two-way highlights**: device highlights appear as native highlights on the web reader; highlights, edits and deletions made on the web come back to the device.
 - **Status & ratings**: reading/complete/abandoned status and star ratings sync both ways, newest-change-wins.
+- **Server fonts**: copies the server's shared font collection into KOReader's fonts folder.
 
 Only books BookOrbit already knows about are synced, matched by the same partial-MD5 file hash KOReader uses internally. Unmatched books on the device are re-checked automatically as your library changes.
 
@@ -81,6 +82,17 @@ Position-only bookmarks (dogears) sync the same way:
 - A dogear has no highlighted text to re-anchor against, so a converted position can sit slightly off where a highlight would have been repaired exactly.
 
 New bookmarks retain their source file. Mapping into a structurally different sibling requires equivalent chapter text; otherwise the bookmark remains unresolved. Legacy bookmarks without source-file provenance remain listed, but the selected-file web reader and delivery to another device withhold their position until a source-device sync or a new bookmark request establishes it. Device-side renames update BookOrbit; an already-linked second device keeps its existing title because bookmark exchange has no edit operation.
+
+## Server fonts
+
+Settings > Fonts > Get server fonts copies the fonts an administrator added under BookOrbit's Server Fonts to the device. It needs plugin 2.3.0 and a server that advertises the `serverFonts` capability; against an older server the row says a server update is required.
+
+- Fonts are saved in `fonts/bookorbit/` inside KOReader's own folder, which KOReader scans on every platform. KOReader registers fonts when it starts, so a run that adds or removes fonts offers a restart.
+- Fonts the administrator deletes are removed from the device on the next run.
+- Each run only downloads fonts that are missing or incomplete, so you can interrupt it and run it again.
+- Only files named by BookOrbit (`<id>.<format>`) are managed. Other fonts you put in that folder are left alone.
+
+KOReader reads a font's family, weight and style from the file itself. If an administrator renamed a family or changed a face's weight in BookOrbit, KOReader still shows the names stored in the file.
 
 ## Limitations
 

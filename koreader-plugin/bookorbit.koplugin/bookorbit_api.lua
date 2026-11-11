@@ -758,6 +758,18 @@ function BookOrbitApi:downloadCatalogAuthorPhoto(author_id, local_path, opts)
     return self:download("/koreader/plugin/catalog/authors/" .. tostring(author_id) .. "/photo", local_path, opts)
 end
 
+-- The server's font collection, from servers advertising serverFonts.
+function BookOrbitApi:listServerFonts()
+    return self:request("GET", "/koreader/plugin/fonts")
+end
+
+function BookOrbitApi:downloadServerFont(font_id, local_path, opts)
+    opts = opts or {}
+    opts.accept = "font/*"
+    opts.expect_content_type = "font/"
+    return self:download("/koreader/plugin/fonts/" .. tostring(font_id) .. "/file", local_path, opts)
+end
+
 -- Plugin self-update endpoints
 
 function BookOrbitApi:getPluginVersion()

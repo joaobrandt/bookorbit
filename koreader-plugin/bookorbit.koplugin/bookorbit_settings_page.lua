@@ -21,6 +21,7 @@ local BoardUI = require("bookorbit_board_ui")
 local DownloadRoot = require("bookorbit_download_root")
 local MenuPage = require("bookorbit_menu_page")
 local MenuUI = require("bookorbit_menu_ui")
+local ServerFonts = require("bookorbit_server_fonts")
 local Shortcut = require("bookorbit_shortcut")
 
 local INK = BoardMetrics.INK
@@ -90,11 +91,18 @@ local function folderName(path)
     return name or path
 end
 
+local function fontsSummary()
+    local count = ServerFonts.countLocal()
+    if count == 0 then return _("No server fonts yet") end
+    return T(_.ngettext("%1 server font", "%1 server fonts", count), count)
+end
+
 local CATEGORIES = {
     { id = "opening", icon = "door-open", label = function() return _("Opening BookOrbit") end, sub = function(page) return openingSummary(page) end },
     { id = "sync", icon = "refresh-cw", label = function() return _("Sync") end, sub = function(page) return syncSummary(page.plugin.settings) end },
     { id = "home", icon = "layout-grid", label = function() return _("Home") end, sub = function(page) return homeSummary(page.plugin.settings) end },
     { id = "downloads", icon = "download", label = function() return _("Downloads") end, sub = function() return folderName(downloadDir()) end },
+    { id = "fonts", icon = "type", label = function() return _("Fonts") end, sub = fontsSummary },
 }
 
 local function titleOf(view)
@@ -400,6 +408,33 @@ local function downloadsBody(page, w, embedded)
     }
 end
 
+-- Get server fonts runs in place: progress, then the outcome, on its row.
+local function fontsRow(page)
+    local f = page.fonts
+    local o = { icon = "download", label = _("Get server fonts"), sub = _("Copy the fonts your server offers to this device"), sublines = 2, chevron = true, action = { kind = "fonts" } }
+    if f and f.running then
+        o.sub, o.sub_data, o.chevron, o.action = f.text, true, false, { kind = "noop" }
+    elseif f and f.done then
+        o.sub = f.text
+    elseif f and f.err then
+        o.sub, o.sub_data = T(_("Could not get fonts: %1"), f.err), true
+    end
+    return o
+end
+
+local function fontsBody(page, w, embedded)
+    local iw = MenuUI.rowsIn(w)
+    return {
+        embedded and text(_("Fonts"), { s = 18, b = true, w = w }) or false,
+        embedded and space(nil, px(12)) or false,
+        MenuUI.group(w, {
+            MenuUI.row(iw, fontsRow(page)),
+        }),
+        space(nil, px(12)),
+        MenuUI.card(w, { space(nil, px(12)), text(_("Server fonts are saved in KOReader's fonts folder and appear in the font menu after KOReader restarts. Fonts removed from the server are removed here too."), { s = 13, col = INK.g4, w = iw, lines = 4, bg = INK.ge }), space(nil, px(12)) }, { fill = true }),
+    }
+end
+
 -- Test connection says how its last run went in place.
 local function testRow(page)
     local t = page.test
@@ -473,7 +508,7 @@ local function aboutBody(page, w, embedded)
     }
 end
 
-local BODIES = { opening = openingBody, home = homeBody, downloads = downloadsBody, account = accountBody, about = aboutBody }
+local BODIES = { opening = openingBody, home = homeBody, downloads = downloadsBody, fonts = fontsBody, account = accountBody, about = aboutBody }
 
 local function bodyFor(page, view, w, avail, embedded)
     if view == "sync" then return syncBody(page, w, avail, embedded) end
@@ -897,6 +932,8 @@ local function onAction(page, action)
         plugin:applyUpdate(settings.update_latest_version)
     elseif kind == "recheck" then
         plugin:startPageSync(page, function() page:refresh() end, { full_recheck = true })
+    elseif kind == "fonts" then
+        plugin:startPageFontSync(page, function() page:refresh() end)
     elseif kind == "diagnostics" then
         plugin:showDiagnostics()
     elseif kind == "shortcut" then
@@ -926,7 +963,7 @@ local function onBack(page)
 end
 
 -- view: nil for the root, or a group id ("opening", "sync", "home",
--- "downloads", "account", "about", "shortcut").
+-- "downloads", "fonts", "account", "about", "shortcut").
 function Settings.open(plugin, catalog, view)
     -- The shortcut picker is always a page of its own; other groups open
     -- beside the list when it is two panes (see twoPane).
